@@ -21,6 +21,7 @@ class RubyXid
 
   def next_xid
     @value = generate_xid
+    string
   end
 
   def pid
@@ -54,7 +55,7 @@ class RubyXid
   def string
     # type: () -> str
     byte_value = bytes
-    b32encode(byte_value)
+    b32encode(byte_value).downcase
   end
 
   def bytes
@@ -68,6 +69,11 @@ class RubyXid
       buford = SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
       buford[0] << 16 | buford[1] << 8 | buford[2]
     end
+  end
+
+  def ==(arg)
+    # type: (Xid) -> bool
+    self.string < arg.string
   end
 
   def <(arg)
@@ -103,7 +109,7 @@ class RubyXid
     end
 
     def decode(src, str_map)
-      src = src.upcase
+      src.upcase!
     
       end_loop = false
       result = []
@@ -271,17 +277,3 @@ class RubyXid
 end
 
 class InvalidXid < ::StandardError; end
-
-# Usage 
-sd = RubyXid.new
-p sd.string
-p sd.next_xid
-p sd.string
-
-p sd.pid
-p sd.counter
-
-p "Create object from encoded string"
-sd = RubyXid.from_string(sd.string)
-p sd.pid
-p sd.counter

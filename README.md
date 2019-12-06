@@ -65,18 +65,24 @@ References:
 ## Install
 
 ```bash
-
+    gem install ruby_xid
 ```
 ## Usage
 
 ```
+guid = RubyXid.new
+guid.string
 ```
 
 Get `xid` embedded info:
 
 ```
+guid.machine
+guid.pid
+guid.counter
+guid.time
 ```
 
 ## Licenses
 
-All source code is licensed under the [MIT License](https://raw.github.com/valarpirai/ruby_xid/master/LICENSE).\
+All source code is licensed under the [MIT License](https://raw.github.com/valarpirai/ruby_xid/master/LICENSE).
