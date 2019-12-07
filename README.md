@@ -74,10 +74,10 @@ guid = Xid.new
 guid.string
 
 # output:
-"bnl5su800jo0po2ac17g===="
+"bnl5su800jo0po2ac17g"
 ```
 ```
-guid = Xid.from_string("bnl5su800jo0po2ac17g====")
+guid = Xid.from_string("bnl5su800jo0po2ac17g")
 ```
 
 Get `xid` embedded info:
