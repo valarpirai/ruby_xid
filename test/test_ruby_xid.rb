@@ -85,4 +85,14 @@ class XidTest < Minitest::Test
     assert_equal(x.value, [0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4,
                                0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9])
   end
+
+  def test_thread_safety
+    threads = []
+
+    100.times do
+      threads << Thread.new { 100.times { Xid.new } }
+    end
+
+    threads.each(&:join)
+  end
 end
