@@ -7,10 +7,14 @@ class Xid
   RAW_LEN = 12
   TRIM_LEN = 20
 
+  attr_accessor :value
+  attr_reader :machine_id
+
   def initialize(id = nil)
     @mutex = Mutex.new
     init_rand_int
     @pid = Process.pid
+    @machine_id = real_machine_id
     unless id.nil?
       # Decoded array
       @value = id
@@ -26,17 +30,17 @@ class Xid
 
   def pid
     # type: () -> int
-    (@value[7] << 8 | @value[8])
+    (value[7] << 8 | value[8])
   end
 
   def counter
     # type: () -> int
-    @value[9] << 16 | @value[10] << 8 | @value[11]
+    value[9] << 16 | value[10] << 8 | value[11]
   end
 
   def machine
     # type: () -> str
-    @value[4..7].map(&:chr)
+    value[4..6].map(&:chr).join('')
   end
 
   def datetime
@@ -45,11 +49,7 @@ class Xid
 
   def time
     # type: () -> int
-    @value[0] << 24 | @value[1] << 16 | @value[2] << 8 | @value[3]
-  end
-
-  def machine_id
-    @machine_id ||= real_machine_id
+    value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]
   end
 
   def string
@@ -60,7 +60,7 @@ class Xid
 
   def bytes
     # type: () -> str
-    @value.map(&:chr).join('')
+    value.map(&:chr).join('')
   end
 
   def init_rand_int
@@ -88,7 +88,7 @@ class Xid
 
   def self.from_string(str)
     val = Base32.b32decode(str)
-    value_check = val.select { |x| x >= 0 && x < 255 }
+    value_check = val.select { |x| x >= 0 && x <= 255 }
 
     (value_check.length..RAW_LEN - 1).each do |i|
       value_check[i] = false
