@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "ruby_xid"
-  s.version = "1.0.0"
+  s.version = "1.0.1"
   s.summary = "Ruby xid implementation"
 
   s.authors = ["Valarpiraichandran"]
