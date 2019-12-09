@@ -19,7 +19,7 @@ class Xid
       # Decoded array
       @value = id
     else
-      @value = generate_xid
+      generate_xid
     end
   end
 
@@ -113,29 +113,29 @@ class Xid
     def generate_xid
       # type: () -> List[int]
       now = Time.now.to_i
-      id = Array.new(RAW_LEN, 0)
+      @value = Array.new(RAW_LEN, 0)
 
-      id[0] = (now >> 24) & 0xff
-      id[1] = (now >> 16) & 0xff
-      id[2] = (now >> 8) & 0xff
-      id[3] = now & 0xff
+      @value[0] = (now >> 24) & 0xff
+      @value[1] = (now >> 16) & 0xff
+      @value[2] = (now >> 8) & 0xff
+      @value[3] = now & 0xff
 
-      id[4] = machine_id[0]
-      id[5] = machine_id[1]
-      id[6] = machine_id[2]
+      @value[4] = machine_id[0]
+      @value[5] = machine_id[1]
+      @value[6] = machine_id[2]
 
-      id[7] = (@pid >> 8) & 0xff
-      id[8] = @pid & 0xff
+      @value[7] = (@pid >> 8) & 0xff
+      @value[8] = @pid & 0xff
 
       @mutex.synchronize do
         @rand_int += 1
       end
 
-      id[9] = (@rand_int >> 16) & 0xff
-      id[10] = (@rand_int >> 8) & 0xff
-      id[11] = @rand_int & 0xff
+      @value[9] = (@rand_int >> 16) & 0xff
+      @value[10] = (@rand_int >> 8) & 0xff
+      @value[11] = @rand_int & 0xff
 
-      id
+      @value
     end
 end
 
