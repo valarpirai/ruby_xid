@@ -113,7 +113,7 @@ class Xid
     def generate_xid
       # type: () -> List[int]
       now = Time.now.to_i
-      id = [0] * RAW_LEN
+      id = Array.new(RAW_LEN, 0)
 
       id[0] = (now >> 24) & 0xff
       id[1] = (now >> 16) & 0xff
@@ -130,11 +130,10 @@ class Xid
       @mutex.synchronize do
         @rand_int += 1
       end
-      i = @rand_int
 
-      id[9] = (i >> 16) & 0xff
-      id[10] = (i >> 8) & 0xff
-      id[11] = i & 0xff
+      id[9] = (@rand_int >> 16) & 0xff
+      id[10] = (@rand_int >> 8) & 0xff
+      id[11] = @rand_int & 0xff
 
       id
     end

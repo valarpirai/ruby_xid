@@ -15,4 +15,6 @@ Benchmark.ips do |x|
     x.report('Xid generate and convert to string') do 
         Xid.new.string
     end
+
+    x.compare!
 end
