@@ -12,7 +12,7 @@ class Xid::Base32
     end
 
     def b32encode(src)
-      src = src.scan(/.{1}/m).map(&:ord)
+      src = src.chars.map(&:ord)
       encode(src, ENCODE_HEX)
     end
 
@@ -24,7 +24,6 @@ class Xid::Base32
       return '' if src_str.empty?
 
       dst = []
-      src_len = 0
       while src_str && !src_str.empty?
         src_len = src_str.length
         next_byte = [0] * 8
@@ -58,19 +57,6 @@ class Xid::Base32
         src_str = src_str[5..src_str.length]
       end
 
-      dst[-1] = '=' if src_len < 5
-      if src_len < 4
-        dst[-2] = '='
-        dst[-3] = '='
-      end
-      if src_len < 3
-        dst[-4] = '='
-      end
-      if src_len < 2
-        dst[-5] = '='
-        dst[-6] = '='
-      end
-
       dst.join('')
     end
 
@@ -91,13 +77,7 @@ class Xid::Base32
             break
           end
           char = src[i]
-          if char == PAD_CHAR
-            end_loop = true
-            src_len = i
-            break
-          else
-            dbuf[i] = decode_hex_map[char]
-          end
+          dbuf[i] = decode_hex_map[char]
         end
 
         if src_len >= 8

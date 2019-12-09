@@ -55,7 +55,7 @@ class Xid
   def string
     # type: () -> str
     byte_value = bytes
-    Base32.b32encode(byte_value).downcase[0..TRIM_LEN - 1]
+    Base32.b32encode(byte_value)[0..TRIM_LEN - 1]
   end
 
   def bytes
@@ -104,10 +104,8 @@ class Xid
     def real_machine_id
       # type: () -> List[int]
       hostname = Socket.gethostname.encode('utf-8')
-      md5 = Digest::MD5.new
-      md5 << hostname
-      val = md5.digest[0..3]
-      val.scan(/.{1}/m).map(&:ord)
+      val = Digest::MD5.digest(hostname)[0..3]
+      val.chars.map(&:ord)
     rescue
       SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
     end
