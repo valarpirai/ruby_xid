@@ -12,7 +12,6 @@ class Xid::Base32
     end
 
     def b32encode(src)
-      src = src.chars.map(&:ord)
       encode(src, ENCODE_HEX)
     end
 
@@ -26,7 +25,7 @@ class Xid::Base32
       dst = []
       while src_str && !src_str.empty?
         src_len = src_str.length
-        next_byte = [0] * 8
+        next_byte = Array.new(8, 0)
 
         if src_len > 4
           next_byte[7] = src_str[4] & 0x1f

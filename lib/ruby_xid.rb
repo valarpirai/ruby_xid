@@ -54,8 +54,7 @@ class Xid
 
   def string
     # type: () -> str
-    byte_value = bytes
-    Base32.b32encode(byte_value)[0..TRIM_LEN - 1]
+    Base32.b32encode(value)[0..TRIM_LEN - 1]
   end
 
   def bytes
