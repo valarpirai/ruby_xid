@@ -8,7 +8,6 @@ class Xid
   TRIM_LEN = 20
 
   attr_accessor :value
-  attr_reader :machine_id
 
   def initialize(id = nil)
     @mutex = Mutex.new
@@ -119,9 +118,9 @@ class Xid
       @value[2] = (now >> 8) & 0xff
       @value[3] = now & 0xff
 
-      @value[4] = machine_id[0]
-      @value[5] = machine_id[1]
-      @value[6] = machine_id[2]
+      @value[4] = @machine_id[0]
+      @value[5] = @machine_id[1]
+      @value[6] = @machine_id[2]
 
       @value[7] = (@pid >> 8) & 0xff
       @value[8] = @pid & 0xff

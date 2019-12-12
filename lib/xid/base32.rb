@@ -1,14 +1,14 @@
 
 class Xid::Base32
   
-  ENCODE_HEX = '0123456789abcdefghijklmnopqrstuv'.freeze
-  PAD_CHAR = '='.freeze
+  # 0123456789abcdefghijklmnopqrstuv - Used for encoding
+  ENCODE_HEX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"].freeze
 
   # Start class methods
   class << self
 
     def decode_hex_map
-      Hash[ENCODE_HEX.chars.each_with_index.map { |x, i| [x, i] }]
+      Hash[ENCODE_HEX.each_with_index.map { |x, i| [x, i] }]
     end
 
     def b32encode(src)
@@ -94,9 +94,9 @@ class Xid::Base32
         if src_len >= 2
           dst[0] = (dbuf[0] << 3) | (dbuf[1] >> 2)
         end
-    
+
         dst = dst.map { |x| x & 0xff }
-    
+
         if src_len == 2
           dst = dst[0]
         elsif src_len == 4
@@ -112,7 +112,7 @@ class Xid::Base32
         result += dst
         src = src[8..src.length]
       end
-    
+
       result
     end
   end
