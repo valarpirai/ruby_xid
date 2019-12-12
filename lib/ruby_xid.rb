@@ -1,29 +1,29 @@
 # Xid implementatin in Ruby 
+require 'socket'
+require 'securerandom'
+require 'date'
+
 class Xid
-  require 'socket'
-  require 'securerandom'
-  require 'date'
 
   RAW_LEN = 12
   TRIM_LEN = 20
 
+  @@generator = nil
+
   attr_accessor :value
 
   def initialize(id = nil)
-    @mutex = Mutex.new
-    init_rand_int
-    @pid = Process.pid
-    @machine_id = real_machine_id
+    @@generator = Generator.new unless @@generator
     unless id.nil?
       # Decoded array
       @value = id
     else
-      generate_xid
+      @value = @@generator.generate_xid
     end
   end
 
   def next_xid
-    @value = generate_xid
+    @value = @@generator.generate_xid
     string
   end
 
@@ -61,14 +61,6 @@ class Xid
     value.map(&:chr).join('')
   end
 
-  def init_rand_int
-    # type: () -> int
-    @rand_int = begin
-      buford = SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
-      buford[0] << 16 | buford[1] << 8 | buford[2]
-    end
-  end
-
   def ==(other_xid)
     # type: (Xid) -> bool
     string < other_xid.string
@@ -97,15 +89,15 @@ class Xid
     Object.const_get(name).new(val)
   end
 
-  private
+  # Xid Generator
+  class Generator
+    attr_accessor :value
 
-    def real_machine_id
-      # type: () -> List[int]
-      hostname = Socket.gethostname.encode('utf-8')
-      val = Digest::MD5.digest(hostname)[0..3]
-      val.chars.map(&:ord)
-    rescue
-      SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
+    def initialize
+      @mutex = Mutex.new
+      init_rand_int
+      @pid = Process.pid
+      @machine_id = real_machine_id
     end
 
     def generate_xid
@@ -135,6 +127,24 @@ class Xid
 
       @value
     end
+
+    private
+      def init_rand_int
+        # type: () -> int
+        @rand_int = begin
+          buford = SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
+          buford[0] << 16 | buford[1] << 8 | buford[2]
+        end
+      end
+      
+      def real_machine_id
+        # type: () -> List[int]
+        val = Digest::MD5.digest(Socket.gethostname.encode('utf-8'))[0..3]
+        val.chars.map(&:ord)
+      rescue
+        SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
+      end
+  end
 end
 
 require_relative 'xid/base32'
