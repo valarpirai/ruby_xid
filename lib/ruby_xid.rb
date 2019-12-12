@@ -18,12 +18,12 @@ class Xid
       # Decoded array
       @value = id
     else
-      @value = @@generator.generate_xid
+      @value = @@generator.next_xid.dup
     end
   end
 
-  def next_xid
-    @value = @@generator.generate_xid
+  def next
+    @value = @@generator.next_xid.dup
     string
   end
 
@@ -51,6 +51,10 @@ class Xid
     value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]
   end
 
+  def inspect
+    "Xid('#{string}')"
+  end
+
   def string
     # type: () -> str
     Base32.b32encode(value)[0..TRIM_LEN - 1]
@@ -63,7 +67,7 @@ class Xid
 
   def ==(other_xid)
     # type: (Xid) -> bool
-    string < other_xid.string
+    string == other_xid.string
   end
 
   def <(other_xid)
@@ -98,6 +102,7 @@ class Xid
       init_rand_int
       @pid = Process.pid
       @machine_id = real_machine_id
+      generate_xid
     end
 
     def generate_xid
@@ -128,6 +133,24 @@ class Xid
       @value
     end
 
+    def next_xid
+      now = Time.now.to_i
+      @value[0] = (now >> 24) & 0xff
+      @value[1] = (now >> 16) & 0xff
+      @value[2] = (now >> 8) & 0xff
+      @value[3] = now & 0xff
+
+      @mutex.synchronize do
+        @rand_int += 1
+      end
+
+      @value[9] = (@rand_int >> 16) & 0xff
+      @value[10] = (@rand_int >> 8) & 0xff
+      @value[11] = @rand_int & 0xff
+
+      @value
+    end
+
     private
       def init_rand_int
         # type: () -> int
@@ -136,7 +159,7 @@ class Xid
           buford[0] << 16 | buford[1] << 8 | buford[2]
         end
       end
-      
+
       def real_machine_id
         # type: () -> List[int]
         val = Digest::MD5.digest(Socket.gethostname.encode('utf-8'))[0..3]
