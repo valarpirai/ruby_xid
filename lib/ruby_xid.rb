@@ -13,17 +13,17 @@ class Xid
 
   def initialize(id = nil)
     @@generator ||= Generator.new(init_rand_int, real_machine_id)
-    @byte_str = id ? id.map(&:chr).join('') : @@generator.next_xid
+    @value = id ? id : @@generator.next_xid.unpack('C12')
   end
 
   def next
     @string = @value = nil
-    @byte_str = @@generator.next_xid
+    @value = @@generator.next_xid.unpack('C12')
     string
   end
 
   def value
-    @value ||= @byte_str.chars.map(&:ord)
+    @value ||= @value.chars.map(&:ord)
   end
 
   def pid
@@ -58,26 +58,9 @@ class Xid
     string
   end
 
-  def string
-    # type: () -> str
-    @string ||= Base32.b32encode(value)[0..TRIM_LEN - 1]
-  end
-
   def bytes
     # type: () -> str
-    @byte_str
-  end
-
-  def init_rand_int
-    # type: () -> int
-    SecureRandom.random_number(16_777_215)
-  end
-
-  def real_machine_id
-    # type: () -> int
-    Digest::MD5.digest(Socket.gethostname).unpack('N')[0]
-  rescue
-    init_rand_int
+    @value.map(&:chr).join('')
   end
 
   def ==(other_xid)
@@ -106,6 +89,24 @@ class Xid
     raise 'Invalid Xid' unless value_check.all?
 
     Object.const_get(name).new(val)
+  end
+
+  private
+  def string
+    # type: () -> str
+    @string ||= Base32.b32encode(value)[0..TRIM_LEN - 1]
+  end
+
+  def init_rand_int
+    # type: () -> int
+    SecureRandom.random_number(16_777_215)
+  end
+
+  def real_machine_id
+    # type: () -> int
+    Digest::MD5.digest(Socket.gethostname).unpack('N')[0]
+  rescue
+    init_rand_int
   end
 
   # Xid Generator
