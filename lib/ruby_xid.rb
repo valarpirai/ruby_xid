@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Xid implementatin in Ruby 
 require 'socket'
 require 'securerandom'
@@ -16,7 +17,9 @@ class Xid
   end
 
   def next
+    @string = @value = nil
     @byte_str = @@generator.next_xid
+    string
   end
 
   def value
@@ -51,9 +54,13 @@ class Xid
     "Xid('#{string}')"
   end
 
+  def to_s
+    string
+  end
+
   def string
     # type: () -> str
-    Base32.b32encode(value)[0..TRIM_LEN - 1]
+    @string ||= Base32.b32encode(value)[0..TRIM_LEN - 1]
   end
 
   def bytes
@@ -75,17 +82,17 @@ class Xid
 
   def ==(other_xid)
     # type: (Xid) -> bool
-    string == other_xid.string
+    to_s == other_xid.to_s
   end
 
   def <(other_xid)
     # type: (Xid) -> bool
-    string < other_xid.string
+    to_s < other_xid.to_s
   end
 
   def >(other_xid)
     # type: (Xid) -> bool
-    string > other_xid.string
+    to_s > other_xid.to_s
   end
 
   def self.from_string(str)
@@ -117,8 +124,7 @@ class Xid
       @mutex.synchronize do
         @rand_int += 1
       end
-      now = ::Time.new.to_i
-      [now, @machine_id, @pid, @rand_int << 8].pack('N NX n NX')
+      [::Time.new.to_i, @machine_id, @pid, @rand_int << 8].pack('N NX n NX')
     end
   end
 end
