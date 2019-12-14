@@ -10,16 +10,17 @@ class Xid
 
   @@generator = nil
 
-  attr_accessor :value
-
   def initialize(id = nil)
     @@generator ||= Generator.new(init_rand_int, real_machine_id)
-    @value = id || @@generator.next_xid
+    @byte_str = id ? id.map(&:chr).join('') : @@generator.next_xid
   end
 
   def next
-    @value = @@generator.next_xid
-    string
+    @byte_str = @@generator.next_xid
+  end
+
+  def value
+    @value ||= @byte_str.chars.map(&:ord)
   end
 
   def pid
@@ -46,9 +47,9 @@ class Xid
     value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]
   end
 
-  def inspect
-    "Xid('#{string}')"
-  end
+  # def inspect
+  #   "Xid('#{string}')"
+  # end
 
   def string
     # type: () -> str
@@ -57,7 +58,7 @@ class Xid
 
   def bytes
     # type: () -> str
-    value.map(&:chr).join('')
+    @byte_str
   end
 
   def init_rand_int
@@ -112,31 +113,12 @@ class Xid
     end
 
     def next_xid
-      # type: () -> List[int]
-      value = Array.new(RAW_LEN, 0)
-
-      now = Time.now.to_i
-      value[0] = (now >> 24) & 0xff
-      value[1] = (now >> 16) & 0xff
-      value[2] = (now >> 8) & 0xff
-      value[3] = now & 0xff
-
-      value[4] = (@machine_id >> 16) & 0xff
-      value[5] = (@machine_id >> 8) & 0xff
-      value[6] = @machine_id & 0xff
-
-      value[7] = (@pid >> 8) & 0xff
-      value[8] = @pid & 0xff
-
+      # () -> str
       @mutex.synchronize do
         @rand_int += 1
       end
-
-      value[9] = (@rand_int >> 16) & 0xff
-      value[10] = (@rand_int >> 8) & 0xff
-      value[11] = @rand_int & 0xff
-
-      value
+      now = ::Time.new.to_i
+      [now, @machine_id, @pid, @rand_int].pack('N NX n NX')
     end
   end
 end
