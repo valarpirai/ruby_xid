@@ -13,17 +13,12 @@ class Xid
   attr_accessor :value
 
   def initialize(id = nil)
-    @@generator = Generator.new unless @@generator
-    unless id.nil?
-      # Decoded array
-      @value = id
-    else
-      @value = @@generator.next_xid.dup
-    end
+    @@generator ||= Generator.new(init_rand_int, real_machine_id)
+    @value = id || @@generator.next_xid
   end
 
   def next
-    @value = @@generator.next_xid.dup
+    @value = @@generator.next_xid
     string
   end
 
@@ -65,6 +60,18 @@ class Xid
     value.map(&:chr).join('')
   end
 
+  def init_rand_int
+    # type: () -> int
+    SecureRandom.random_number(16_777_215)
+  end
+
+  def real_machine_id
+    # type: () -> int
+    Digest::MD5.digest(Socket.gethostname).unpack('N')[0]
+  rescue
+    init_rand_int
+  end
+
   def ==(other_xid)
     # type: (Xid) -> bool
     string == other_xid.string
@@ -97,76 +104,40 @@ class Xid
   class Generator
     attr_accessor :value
 
-    def initialize
+    def initialize(rand_val = nil, machine_id = 0)
       @mutex = Mutex.new
-      init_rand_int
+      @rand_int = rand_val || rand(65_535)
       @pid = Process.pid
-      @machine_id = real_machine_id
-      generate_xid
-    end
-
-    def generate_xid
-      # type: () -> List[int]
-      now = Time.now.to_i
-      @value = Array.new(RAW_LEN, 0)
-
-      @value[0] = (now >> 24) & 0xff
-      @value[1] = (now >> 16) & 0xff
-      @value[2] = (now >> 8) & 0xff
-      @value[3] = now & 0xff
-
-      @value[4] = @machine_id[0]
-      @value[5] = @machine_id[1]
-      @value[6] = @machine_id[2]
-
-      @value[7] = (@pid >> 8) & 0xff
-      @value[8] = @pid & 0xff
-
-      @mutex.synchronize do
-        @rand_int += 1
-      end
-
-      @value[9] = (@rand_int >> 16) & 0xff
-      @value[10] = (@rand_int >> 8) & 0xff
-      @value[11] = @rand_int & 0xff
-
-      @value
+      @machine_id = machine_id
     end
 
     def next_xid
+      # type: () -> List[int]
+      value = Array.new(RAW_LEN, 0)
+
       now = Time.now.to_i
-      @value[0] = (now >> 24) & 0xff
-      @value[1] = (now >> 16) & 0xff
-      @value[2] = (now >> 8) & 0xff
-      @value[3] = now & 0xff
+      value[0] = (now >> 24) & 0xff
+      value[1] = (now >> 16) & 0xff
+      value[2] = (now >> 8) & 0xff
+      value[3] = now & 0xff
+
+      value[4] = (@machine_id >> 16) & 0xff
+      value[5] = (@machine_id >> 8) & 0xff
+      value[6] = @machine_id & 0xff
+
+      value[7] = (@pid >> 8) & 0xff
+      value[8] = @pid & 0xff
 
       @mutex.synchronize do
         @rand_int += 1
       end
 
-      @value[9] = (@rand_int >> 16) & 0xff
-      @value[10] = (@rand_int >> 8) & 0xff
-      @value[11] = @rand_int & 0xff
+      value[9] = (@rand_int >> 16) & 0xff
+      value[10] = (@rand_int >> 8) & 0xff
+      value[11] = @rand_int & 0xff
 
-      @value
+      value
     end
-
-    private
-      def init_rand_int
-        # type: () -> int
-        @rand_int = begin
-          buford = SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
-          buford[0] << 16 | buford[1] << 8 | buford[2]
-        end
-      end
-
-      def real_machine_id
-        # type: () -> List[int]
-        val = Digest::MD5.digest(Socket.gethostname.encode('utf-8'))[0..3]
-        val.chars.map(&:ord)
-      rescue
-        SecureRandom.hex(3).scan(/.{2}/m).map(&:hex)
-      end
   end
 end
 
