@@ -47,9 +47,9 @@ class Xid
     value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]
   end
 
-  # def inspect
-  #   "Xid('#{string}')"
-  # end
+  def inspect
+    "Xid('#{string}')"
+  end
 
   def string
     # type: () -> str
@@ -118,7 +118,7 @@ class Xid
         @rand_int += 1
       end
       now = ::Time.new.to_i
-      [now, @machine_id, @pid, @rand_int].pack('N NX n NX')
+      [now, @machine_id, @pid, @rand_int << 8].pack('N NX n NX')
     end
   end
 end
