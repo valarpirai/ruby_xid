@@ -13,17 +13,17 @@ class Xid
 
   def initialize(id = nil)
     @@generator ||= Generator.new(init_rand_int, real_machine_id)
-    @value = id ? id : @@generator.next_xid.unpack('C12')
+    @value = id ? id : @@generator.generate_data.unpack('C12')
   end
 
   def next
-    @string = @value = nil
-    @value = @@generator.next_xid.unpack('C12')
+    @string = nil
+    @value = @@generator.generate_data.unpack('C12')
     string
   end
 
   def value
-    @value ||= @value.chars.map(&:ord)
+    @value
   end
 
   def pid
@@ -120,7 +120,7 @@ class Xid
       @machine_id = machine_id
     end
 
-    def next_xid
+    def generate_data
       # () -> str
       @mutex.synchronize do
         @rand_int += 1

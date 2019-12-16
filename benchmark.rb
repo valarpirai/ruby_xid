@@ -1,19 +1,28 @@
 require 'benchmark/ips'
 require 'ruby_xid'
+require 'mongoid'
 
 Benchmark.ips do |x|
-  x.config(:time => 5, :warmup => 2)
+  x.config(time: 5, warmup: 2)
 
-  x.report('Xid generation') do
+  x.report('MongoId') do
+    BSON::ObjectId.new
+  end
+
+  x.report('BSON Generate') do
+    BSON::ObjectId::Generator.new
+  end
+
+  # x.report('Xid Generate') do
+  #   Xid::Generator.new
+  # end
+
+  x.report('Xid') do
     Xid.new
   end
 
-  x.report('Xid generate and convert to bytes') do
-    Xid.new.bytes
-  end
-
-  x.report('Xid generate and convert to string') do
-    Xid.new.string
+  x.report('Xid - string') do
+    Xid.new.to_s
   end
 
   x.compare!
