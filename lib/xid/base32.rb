@@ -3,6 +3,7 @@ class Xid::Base32
   
   # 0123456789abcdefghijklmnopqrstuv - Used for encoding
   ENCODE_HEX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"].freeze
+  TRIM_LEN = 20
 
   # Start class methods
   class << self
@@ -12,18 +13,16 @@ class Xid::Base32
     end
 
     def b32encode(src)
-      encode(src, ENCODE_HEX)
+      encode(src)
     end
 
     def b32decode(src)
       decode(src, ENCODE_HEX)
     end
 
-    def encode(src_str, str_map)
-      return '' if src_str.empty?
-
-      dst = []
-      while src_str && !src_str.empty?
+    def encode(src_str)
+      dst = ''
+      3.times do |i|
         src_len = src_str.length
         next_byte = Array.new(8, 0)
 
@@ -50,13 +49,14 @@ class Xid::Base32
           next_byte[0] = src_str[0] >> 3
         end
 
-        next_byte.each do |nb|
-          dst << str_map[nb]
-        end
         src_str = src_str[5..src_str.length]
+        next_byte = next_byte[0..3] if i == 2
+        next_byte.each do |nb|
+          dst += ENCODE_HEX[nb]
+        end
       end
 
-      dst.join('')
+      dst
     end
 
     def decode(src, str_map)

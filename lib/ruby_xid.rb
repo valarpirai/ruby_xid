@@ -7,7 +7,6 @@ require 'date'
 class Xid
 
   RAW_LEN = 12
-  TRIM_LEN = 20
 
   @@generator = nil
 
@@ -94,7 +93,7 @@ class Xid
   private
   def string
     # type: () -> str
-    @string ||= Base32.b32encode(value)[0..TRIM_LEN - 1]
+    @string ||= Base32.b32encode(value)
   end
 
   def init_rand_int

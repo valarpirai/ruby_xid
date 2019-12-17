@@ -30,23 +30,23 @@ class XidTest < Minitest::Test
   def test_no_duplicates
     collect = []
     1000.times { collect << Xid.new }
-    ids = collect.each(&:string)
+    ids = collect.each(&:to_s)
     assert_equal (ids | []).length, 1000
   end
 
   def test_from_string
     x = Xid.new
-    y = Xid.from_string(x.string)
+    y = Xid.from_string(x.to_s)
 
     assert_equal x.value, y.value
     assert_equal x.bytes, y.bytes
-    assert_equal x.string, y.string
+    assert_equal x.to_s, y.to_s
   end
 
   def test_xid_always_reversible
     10.times do
-      str = Xid.new.string
-      assert_equal(Xid.from_string(str).string, str)
+      str = Xid.new.to_s
+      assert_equal(Xid.from_string(str).to_s, str)
     end
   end
 
@@ -77,7 +77,7 @@ class XidTest < Minitest::Test
   def test_copy_array_from_golang
     x = Xid.new([0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4,
              0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9])
-    assert_equal('9m4e2mr0ui3e8a215n4g', x.string)
+    assert_equal('9m4e2mr0ui3e8a215n4g', x.to_s)
   end
 
   def test_copy_string_from_golang
