@@ -12,12 +12,12 @@ class Xid
 
   def initialize(id = nil)
     @@generator ||= Generator.new(init_rand_int, real_machine_id)
-    @value = id ? id : @@generator.generate_data.unpack('C12')
+    @value = id ? id : @@generator.generate.unpack('C12')
   end
 
   def next
     @string = nil
-    @value = @@generator.generate_data.unpack('C12')
+    @value = @@generator.generate.unpack('C12')
     string
   end
 
@@ -59,7 +59,7 @@ class Xid
 
   def bytes
     # type: () -> str
-    @value.map(&:chr).join('')
+    @value.pack('c12')
   end
 
   def ==(other_xid)
@@ -119,7 +119,7 @@ class Xid
       @machine_id = machine_id
     end
 
-    def generate_data
+    def generate
       # () -> str
       @mutex.synchronize do
         @rand_int += 1

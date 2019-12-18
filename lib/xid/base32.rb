@@ -20,43 +20,30 @@ class Xid::Base32
       decode(src, ENCODE_HEX)
     end
 
-    def encode(src_str)
-      dst = ''
-      3.times do |i|
-        src_len = src_str.length
-        next_byte = Array.new(8, 0)
+    def encode(id)
+      dst = []
+      dst[19] = ENCODE_HEX[(id[11] << 4) & 0x1f]
+      dst[18] = ENCODE_HEX[(id[11] >> 1) & 0x1f]
+      dst[17] = ENCODE_HEX[(id[11] >> 6) & 0x1f | (id[10] << 2) & 0x1f]
+      dst[16] = ENCODE_HEX[id[10] >> 3]
+      dst[15] = ENCODE_HEX[id[9] & 0x1f]
+      dst[14] = ENCODE_HEX[(id[9] >> 5) | (id[8] << 3) & 0x1f]
+      dst[13] = ENCODE_HEX[(id[8] >> 2) & 0x1f]
+      dst[12] = ENCODE_HEX[id[8] >> 7 | (id[7] << 1) & 0x1f]
+      dst[11] = ENCODE_HEX[(id[7] >> 4) & 0x1f | (id[6] << 4) & 0x1f]
+      dst[10] = ENCODE_HEX[(id[6] >> 1) & 0x1f]
+      dst[9] = ENCODE_HEX[(id[6] >> 6) & 0x1f | (id[5] << 2) & 0x1f]
+      dst[8] = ENCODE_HEX[id[5] >> 3]
+      dst[7] = ENCODE_HEX[id[4] & 0x1f]
+      dst[6] = ENCODE_HEX[id[4] >> 5 | (id[3] << 3) & 0x1f]
+      dst[5] = ENCODE_HEX[(id[3] >> 2) & 0x1f]
+      dst[4] = ENCODE_HEX[id[3] >> 7 | (id[2] << 1) & 0x1f]
+      dst[3] = ENCODE_HEX[(id[2] >> 4) & 0x1f | (id[1] << 4) & 0x1f]
+      dst[2] = ENCODE_HEX[(id[1] >> 1) & 0x1f]
+      dst[1] = ENCODE_HEX[(id[1] >> 6) & 0x1f | (id[0] << 2) & 0x1f]
+      dst[0] = ENCODE_HEX[id[0] >> 3]
 
-        if src_len > 4
-          next_byte[7] = src_str[4] & 0x1f
-          next_byte[6] = src_str[4] >> 5
-        end
-        if src_len > 3
-          next_byte[6] = next_byte[6] | (src_str[3] << 3) & 0x1f
-          next_byte[5] = (src_str[3] >> 2) & 0x1f
-          next_byte[4] = src_str[3] >> 7
-        end
-        if src_len > 2
-          next_byte[4] = next_byte[4] | (src_str[2] << 1) & 0x1f
-          next_byte[3] = (src_str[2] >> 4) & 0x1f
-        end
-        if src_len > 1
-          next_byte[3] = next_byte[3] | (src_str[1] << 4) & 0x1f
-          next_byte[2] = (src_str[1] >> 1) & 0x1f
-          next_byte[1] = (src_str[1] >> 6) & 0x1f
-        end
-        if src_len > 0
-          next_byte[1] = next_byte[1] | (src_str[0] << 2) & 0x1f
-          next_byte[0] = src_str[0] >> 3
-        end
-
-        src_str = src_str[5..src_str.length]
-        next_byte = next_byte[0..3] if i == 2
-        next_byte.each do |nb|
-          dst += ENCODE_HEX[nb]
-        end
-      end
-
-      dst
+      dst.join('')
     end
 
     def decode(src, str_map)
