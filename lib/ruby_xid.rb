@@ -78,6 +78,7 @@ class Xid
   end
 
   def self.from_string(str)
+    raise 'Invalid Xid' if str.nil? || !str.match(/^[a-v0-9]{20}$/i)
     val = Base32.b32decode(str)
     value_check = val.select { |x| x >= 0 && x <= 255 }
 

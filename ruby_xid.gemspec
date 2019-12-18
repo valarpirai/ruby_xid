@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'ruby_xid'
-  s.version = '1.0.6'
+  s.version = '1.0.7'
   s.required_ruby_version = '>= 1.9.3'
   s.summary = 'Ruby xid implementation'
 
