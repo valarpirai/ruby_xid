@@ -67,6 +67,9 @@ References:
 ```bash
     gem install ruby_xid
 ```
+
+https://rubygems.org/gems/ruby_xid
+
 ## Usage
 
 ```
