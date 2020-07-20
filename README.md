@@ -78,6 +78,12 @@ guid.string
 
 # output:
 "bnl5su800jo0po2ac17g"
+
+# Generate next Xid
+guid.next
+
+# output:
+"bnl5su800jo0po2ac18a"
 ```
 ```
 guid = Xid.from_string("bnl5su800jo0po2ac17g")
