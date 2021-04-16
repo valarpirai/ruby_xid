@@ -74,7 +74,7 @@ https://rubygems.org/gems/ruby_xid
 
 ```
 guid = Xid.new
-guid.string
+guid.to_s
 
 # output:
 "bnl5su800jo0po2ac17g"
