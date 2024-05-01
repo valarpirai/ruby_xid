@@ -3,6 +3,7 @@
 require 'socket'
 require 'securerandom'
 require 'date'
+require 'digest'
 
 class Xid
 
