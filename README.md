@@ -98,6 +98,37 @@ guid.counter
 guid.time
 ```
 
+## Development
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+ruby -I lib test/test_ruby_xid.rb
+```
+
+The test suite includes:
+- Uniqueness tests (1000 XIDs)
+- String serialization and round-trip conversion
+- Field extraction (time, machine, PID, counter)
+- Go compatibility tests with reference test vectors
+- Thread safety tests (100 threads × 100 XIDs)
+
+### Running Benchmarks
+
+To run performance benchmarks:
+
+```bash
+ruby simple_benchmark.rb
+```
+
+This will measure performance of:
+- `Xid.new` - ID generation
+- `Xid.new.to_s` - Generation and stringification
+- `from_string` - Parsing XIDs from strings
+- Field extraction - Accessing embedded data
+
 ## Licenses
 
 All source code is licensed under the [MIT License](https://raw.github.com/valarpirai/ruby_xid/master/LICENSE).

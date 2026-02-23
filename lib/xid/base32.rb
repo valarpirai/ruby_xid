@@ -1,16 +1,13 @@
 
 class Xid::Base32
-  
+
   # 0123456789abcdefghijklmnopqrstuv - Used for encoding
   ENCODE_HEX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"].freeze
+  DECODE_HEX_MAP = Hash[ENCODE_HEX.each_with_index.map { |x, i| [x, i] }].freeze
   TRIM_LEN = 20
 
   # Start class methods
   class << self
-
-    def decode_hex_map
-      Hash[ENCODE_HEX.each_with_index.map { |x, i| [x, i] }]
-    end
 
     def b32encode(src)
       encode(src)
@@ -21,33 +18,37 @@ class Xid::Base32
     end
 
     def encode(id)
-      dst = []
-      dst[19] = ENCODE_HEX[(id[11] << 4) & 0x1f]
-      dst[18] = ENCODE_HEX[(id[11] >> 1) & 0x1f]
-      dst[17] = ENCODE_HEX[(id[11] >> 6) & 0x1f | (id[10] << 2) & 0x1f]
-      dst[16] = ENCODE_HEX[id[10] >> 3]
-      dst[15] = ENCODE_HEX[id[9] & 0x1f]
-      dst[14] = ENCODE_HEX[(id[9] >> 5) | (id[8] << 3) & 0x1f]
-      dst[13] = ENCODE_HEX[(id[8] >> 2) & 0x1f]
-      dst[12] = ENCODE_HEX[id[8] >> 7 | (id[7] << 1) & 0x1f]
-      dst[11] = ENCODE_HEX[(id[7] >> 4) & 0x1f | (id[6] << 4) & 0x1f]
-      dst[10] = ENCODE_HEX[(id[6] >> 1) & 0x1f]
-      dst[9] = ENCODE_HEX[(id[6] >> 6) & 0x1f | (id[5] << 2) & 0x1f]
-      dst[8] = ENCODE_HEX[id[5] >> 3]
-      dst[7] = ENCODE_HEX[id[4] & 0x1f]
-      dst[6] = ENCODE_HEX[id[4] >> 5 | (id[3] << 3) & 0x1f]
-      dst[5] = ENCODE_HEX[(id[3] >> 2) & 0x1f]
-      dst[4] = ENCODE_HEX[id[3] >> 7 | (id[2] << 1) & 0x1f]
-      dst[3] = ENCODE_HEX[(id[2] >> 4) & 0x1f | (id[1] << 4) & 0x1f]
-      dst[2] = ENCODE_HEX[(id[1] >> 1) & 0x1f]
-      dst[1] = ENCODE_HEX[(id[1] >> 6) & 0x1f | (id[0] << 2) & 0x1f]
-      dst[0] = ENCODE_HEX[id[0] >> 3]
+      # Convert to byte array if binary string
+      id = id.bytes if id.is_a?(String)
 
-      dst.join('')
+      # Build string directly instead of array + join
+      dst = String.new(capacity: 20)
+      dst << ENCODE_HEX[id[0] >> 3]
+      dst << ENCODE_HEX[(id[0] << 2) & 0x1f | (id[1] >> 6) & 0x1f]
+      dst << ENCODE_HEX[(id[1] >> 1) & 0x1f]
+      dst << ENCODE_HEX[(id[1] << 4) & 0x1f | (id[2] >> 4) & 0x1f]
+      dst << ENCODE_HEX[(id[2] << 1) & 0x1f | id[3] >> 7]
+      dst << ENCODE_HEX[(id[3] >> 2) & 0x1f]
+      dst << ENCODE_HEX[(id[3] << 3) & 0x1f | id[4] >> 5]
+      dst << ENCODE_HEX[id[4] & 0x1f]
+      dst << ENCODE_HEX[id[5] >> 3]
+      dst << ENCODE_HEX[(id[5] << 2) & 0x1f | (id[6] >> 6) & 0x1f]
+      dst << ENCODE_HEX[(id[6] >> 1) & 0x1f]
+      dst << ENCODE_HEX[(id[6] << 4) & 0x1f | (id[7] >> 4) & 0x1f]
+      dst << ENCODE_HEX[(id[7] << 1) & 0x1f | id[8] >> 7]
+      dst << ENCODE_HEX[(id[8] >> 2) & 0x1f]
+      dst << ENCODE_HEX[(id[8] << 3) & 0x1f | (id[9] >> 5)]
+      dst << ENCODE_HEX[id[9] & 0x1f]
+      dst << ENCODE_HEX[id[10] >> 3]
+      dst << ENCODE_HEX[(id[10] << 2) & 0x1f | (id[11] >> 6) & 0x1f]
+      dst << ENCODE_HEX[(id[11] >> 1) & 0x1f]
+      dst << ENCODE_HEX[(id[11] << 4) & 0x1f]
+
+      dst.freeze
     end
 
     def decode(src, str_map)
-      src.downcase!
+      src = src.downcase
 
       end_loop = false
       result = []
@@ -63,7 +64,7 @@ class Xid::Base32
             break
           end
           char = src[i]
-          dbuf[i] = decode_hex_map[char]
+          dbuf[i] = DECODE_HEX_MAP[char]
         end
 
         if src_len >= 8

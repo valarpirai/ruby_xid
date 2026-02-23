@@ -13,32 +13,38 @@ class Xid
 
   def initialize(id = nil)
     @@generator ||= Generator.new(init_rand_int, real_machine_id)
-    @value = id ? id : @@generator.generate.unpack('C12')
+    if id
+      # Convert array to binary string if needed
+      @value = id.is_a?(String) ? id : id.pack('C*')
+    else
+      @value = @@generator.generate
+    end
   end
 
   def next
     @string = nil
-    @value = @@generator.generate.unpack('C12')
+    @value = @@generator.generate
     string
   end
 
   def value
-    @value
+    # Return as array for backward compatibility
+    @value.bytes
   end
 
   def pid
     # type: () -> int
-    (value[7] << 8 | value[8])
+    (@value.getbyte(7) << 8 | @value.getbyte(8))
   end
 
   def counter
     # type: () -> int
-    value[9] << 16 | value[10] << 8 | value[11]
+    @value.getbyte(9) << 16 | @value.getbyte(10) << 8 | @value.getbyte(11)
   end
 
   def machine
     # type: () -> str
-    value[4..6].map(&:chr).join('')
+    @value[4, 3]
   end
 
   def datetime
@@ -47,7 +53,7 @@ class Xid
 
   def time
     # type: () -> int
-    value[0] << 24 | value[1] << 16 | value[2] << 8 | value[3]
+    @value.getbyte(0) << 24 | @value.getbyte(1) << 16 | @value.getbyte(2) << 8 | @value.getbyte(3)
   end
 
   def inspect
@@ -60,7 +66,7 @@ class Xid
 
   def bytes
     # type: () -> str
-    @value.pack('c12')
+    @value
   end
 
   def ==(other_xid)
@@ -89,13 +95,15 @@ class Xid
 
     raise 'Invalid Xid' unless value_check.all?
 
-    Object.const_get(name).new(val)
+    # Convert array to binary string
+    binary_val = val.pack('C*')
+    Object.const_get(name).new(binary_val)
   end
 
   private
   def string
     # type: () -> str
-    @string ||= Base32.b32encode(value)
+    @string ||= Base32.b32encode(@value)
   end
 
   def init_rand_int
