@@ -1,6 +1,6 @@
 require 'benchmark/ips'
 require 'ruby_xid'
-require 'mongoid'
+require 'bson'
 
 Benchmark.ips do |x|
   x.config(time: 5, warmup: 2)

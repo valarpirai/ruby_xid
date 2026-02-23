@@ -100,10 +100,30 @@ guid.time
 
 ## Development
 
+### Dependencies
+
+**Runtime:** No external dependencies (uses only Ruby standard library)
+
+**Development dependencies:**
+- `minitest` - For running tests
+- `rake` - For task automation (optional)
+- `benchmark-ips` - For running comparative benchmarks (optional)
+- `bson` - For comparing with MongoDB ObjectID (optional)
+
+Install development dependencies:
+```bash
+gem install minitest rake
+gem install benchmark-ips bson  # Optional, for benchmarks
+```
+
 ### Running Tests
 
-To run the test suite:
+Using Rake:
+```bash
+rake test
+```
 
+Or directly:
 ```bash
 ruby -I lib test/test_ruby_xid.rb
 ```
@@ -117,17 +137,26 @@ The test suite includes:
 
 ### Running Benchmarks
 
-To run performance benchmarks:
-
+Simple benchmark (no external dependencies):
 ```bash
+rake benchmark
+# or
 ruby simple_benchmark.rb
 ```
 
-This will measure performance of:
-- `Xid.new` - ID generation
+Full comparative benchmark (requires `benchmark-ips` and `bson` gems):
+```bash
+rake benchmark_full
+# or
+ruby -I lib benchmark.rb
+```
+
+Benchmarks measure:
+- `Xid.new` - ID generation speed
 - `Xid.new.to_s` - Generation and stringification
 - `from_string` - Parsing XIDs from strings
 - Field extraction - Accessing embedded data
+- Comparison with BSON::ObjectId performance
 
 ## Licenses
 
